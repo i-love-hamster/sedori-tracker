@@ -952,39 +952,15 @@ function setLatLngResult(lat, lng) {
   return false;
 }
 
-async function extractLatLng(url) {
+function extractLatLng(url) {
   const status = document.getElementById('latlngStatus');
   if (!url) { status.textContent = ''; return; }
   const direct = parseLatLng(url);
   if (direct && setLatLngResult(direct.lat, direct.lng)) return;
-  if (url.includes('goo.gl') || url.includes('maps.app') || url.length < 80) {
-    status.style.color = 'var(--text2)';
-    status.textContent = '🔄 URLを展開中...';
-    try {
-      const res = await fetch(url, { method: 'GET', mode: 'no-cors', redirect: 'follow', signal: AbortSignal.timeout(10000) });
-      const expanded = res.url || '';
-      if (expanded && expanded !== url) {
-        const parsed = parseLatLng(expanded);
-        if (parsed && setLatLngResult(parsed.lat, parsed.lng)) return;
-      }
-    } catch (e) {}
-    try {
-      const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
-      const res2 = await fetch(proxyUrl, { signal: AbortSignal.timeout(10000) });
-      const expanded2 = res2.url || '';
-      if (expanded2 && expanded2 !== proxyUrl) {
-        const parsed = parseLatLng(expanded2);
-        if (parsed && setLatLngResult(parsed.lat, parsed.lng)) return;
-      }
-      const html = await res2.text();
-      const parsed = parseLatLng(html);
-      if (parsed && setLatLngResult(parsed.lat, parsed.lng)) return;
-    } catch (e) {}
-  }
   document.getElementById('fLat').value = '';
   document.getElementById('fLng').value = '';
   status.style.color = 'var(--warn)';
-  status.textContent = url.length > 10 ? '⚠️ 座標を取得できませんでした。ブラウザ版GoogleマップのアドレスバーのURLをお試しください' : '';
+  status.textContent = url.length > 10 ? '⚠️ 座標を取得できませんでした。ブラウザ版GoogleマップのアドレスバーのURLをお試しください（アプリの共有URLには対応していません）' : '';
 }
 
 // ===== EXPORT / IMPORT =====
