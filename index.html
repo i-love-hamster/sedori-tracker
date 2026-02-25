@@ -16,8 +16,8 @@
   --accent: #00e5a0;
   --accent2: #7c4dff;
   --warn: #ff6b35;
-  --text: #e8e8f0;
-  --text2: #888899;
+  --text: #f0f0f6;
+  --text2: #9a9ab0;
   --border: rgba(255,255,255,0.08);
   --radius: 16px;
   --font-display: 'Outfit', sans-serif;
@@ -33,7 +33,7 @@ html { scrollbar-gutter: stable; }
 
 /* HEADER */
 .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; z-index: 100; backdrop-filter: blur(10px); flex-shrink: 0; }
-.logo { font-family: var(--font-display); font-weight: 800; font-size: 20px; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.logo { font-family: var(--font-display); font-weight: 800; font-size: 20px; color: var(--accent); }
 .session-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; letter-spacing: 0.5px; }
 .session-badge.off { background: rgba(255,255,255,0.06); color: var(--text2); }
 .session-badge.on  { background: rgba(0,229,160,0.15); color: var(--accent); border: 1px solid rgba(0,229,160,0.3); animation: badgePulse 2s ease-in-out infinite; }
@@ -352,7 +352,7 @@ html { scrollbar-gutter: stable; }
       <div class="data-card-icon">📥</div>
       <div class="data-card-body">
         <div class="data-card-title">データをインポート</div>
-        <div class="data-card-desc">以前エクスポートしたJSONファイルを読み込みます。Googleドライブ・Dropbox・iCloud等から選択できます。<br><strong style="color:var(--warn)">⚠️ 現在のデータに追加されます（上書きではありません）</strong></div>
+        <div class="data-card-desc">以前エクスポートしたJSONファイルを読み込みます。Googleドライブ・Dropbox・iCloud等から選択できます。<br><strong style="color:var(--warn)">⚠️ 現在のデータに追加されます（上書きではありません）</strong><br><span style="color:var(--text2);font-size:11px">💡 iPhoneでは「ファイル」アプリが開きます。左上の「ブラウズ」からGoogleドライブ等を選択できます（各アプリのインストールが必要です）</span></div>
         <button class="btn-data import" onclick="document.getElementById('importFile').click()">インポートする</button>
         <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
       </div>
@@ -814,9 +814,33 @@ function renderStats() {
           ${visitCount > 0 ? `
           <div class="section-title" style="margin-top:4px">訪問詳細</div>
           ${visitRows}` : '<div style="color:var(--text2);font-size:13px;padding-top:8px">この店舗せどりの訪問記録がありません</div>'}
+          <button onclick="deleteSession('${sess.id}', ${visitCount})" style="width:100%;margin-top:14px;padding:10px;border-radius:10px;border:1px solid rgba(255,107,53,0.3);background:rgba(255,107,53,0.08);color:var(--warn);font-size:13px;font-weight:700;font-family:var(--font-body);cursor:pointer;transition:all 0.2s">🗑 この記録を削除</button>
         </div>
       </div>`;
   }).join('');
+}
+
+function deleteSession(sessionId, visitCount) {
+  const sess = sessions.find(s => s.id === sessionId);
+  if (!sess) return;
+  const msg = visitCount > 0
+    ? `${sess.date} の店舗せどり記録と、紐づく ${visitCount}件 の訪問履歴を削除します。\nこの操作は取り消せません。`
+    : `${sess.date} の店舗せどり記録を削除します。\nこの操作は取り消せません。`;
+  showConfirm({
+    icon: '🗑️',
+    title: 'この記録を削除しますか？',
+    msg,
+    okLabel: '削除する',
+    okClass: 'ok-stop',
+    onOk: () => {
+      // 紐づく訪問履歴も削除
+      visits = visits.filter(v => v.sessionId !== sessionId);
+      sessions = sessions.filter(s => s.id !== sessionId);
+      save();
+      renderStats();
+      toast('記録を削除しました');
+    }
+  });
 }
 
 function toggleStatDay(id, header) {
