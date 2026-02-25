@@ -423,7 +423,7 @@ let confirmCallback = null;
 function showConfirm({ icon, title, msg, okLabel, okClass, onOk }) {
   document.getElementById('confirmIcon').textContent  = icon;
   document.getElementById('confirmTitle').textContent = title;
-  document.getElementById('confirmMsg').textContent   = msg;
+  document.getElementById('confirmMsg').innerHTML = msg.replace(/\n/g, '<br>');
   const okBtn = document.getElementById('confirmOkBtn');
   okBtn.textContent = okLabel;
   okBtn.className   = 'confirm-btn ' + okClass;
@@ -893,23 +893,43 @@ async function extractLatLng(url) {
   if (direct && setLatLngResult(direct.lat, direct.lng)) return;
 
   // 短縮URLの場合は展開して再試行
-  if (url.includes('goo.gl') || url.includes('maps.app') || url.length < 60) {
+  if (url.includes('goo.gl') || url.includes('maps.app') || url.length < 80) {
     status.style.color = 'var(--text2)';
     status.textContent = '🔄 URLを展開中...';
     try {
-      const res = await fetch(
-        'https://api.unshorten.me/?requestedURL=' + encodeURIComponent(url),
-        { signal: AbortSignal.timeout(8000) }
-      );
-      if (!res.ok) throw new Error('API error');
-      const data = await res.json();
-      const expanded = data.resolvedURL || data.resolved_url || '';
-      if (expanded) {
+      // mode:'no-cors' でfetchするとリダイレクトに追随しつつ response.url に最終URLが入る
+      const res = await fetch(url, {
+        method: 'GET',
+        mode: 'no-cors',
+        redirect: 'follow',
+        signal: AbortSignal.timeout(10000)
+      });
+      // no-cors では response.url にリダイレクト後の最終URLが入る
+      const expanded = res.url || '';
+      if (expanded && expanded !== url) {
         const parsed = parseLatLng(expanded);
         if (parsed && setLatLngResult(parsed.lat, parsed.lng)) return;
       }
     } catch (e) {
-      // APIが失敗した場合はフォールスルー
+      // フォールスルー
+    }
+
+    // no-cors で取れなかった場合は corsproxy.io を試す
+    try {
+      const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
+      const res2 = await fetch(proxyUrl, { signal: AbortSignal.timeout(10000) });
+      // リダイレクト後の最終URLをres2.urlから、またはHTMLのcanonicalタグから取得
+      const expanded2 = res2.url || '';
+      if (expanded2 && expanded2 !== proxyUrl) {
+        const parsed = parseLatLng(expanded2);
+        if (parsed && setLatLngResult(parsed.lat, parsed.lng)) return;
+      }
+      // HTMLソースの中にも座標が埋め込まれている場合がある
+      const html = await res2.text();
+      const parsed = parseLatLng(html);
+      if (parsed && setLatLngResult(parsed.lat, parsed.lng)) return;
+    } catch (e) {
+      // フォールスルー
     }
   }
 
