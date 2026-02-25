@@ -302,7 +302,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans JP', s
     <div class="data-card-icon">📤</div>
     <div class="data-card-body">
       <div class="data-card-title">データをエクスポート</div>
-      <div class="data-card-desc">店舗・訪問履歴・せどり記録をすべてJSONファイルに保存します。Googleドライブ・Dropbox・iCloud等に保存できます。</div>
+      <div class="data-card-desc">店舗・訪問履歴・せどり記録をすべてJSONファイルに保存します。Googleドライブ・Dropbox・iCloud等に保存できます。機種変更時のバックアップに活用ください。</div>
       <button class="btn-data export" onclick="exportData()">エクスポートする</button>
     </div>
   </div>
@@ -856,46 +856,68 @@ function closeStoreDetail(e) { if (e.target === document.getElementById('storeDe
 function closeStoreDetailForce() { document.getElementById('storeDetailOverlay').classList.remove('open'); }
 
 // ===== GOOGLE MAPS URL PARSER =====
-function extractLatLng(url) {
-  const status = document.getElementById('latlngStatus');
-  if (!url) { status.textContent = ''; return; }
-
-  let lat = null, lng = null;
-
-  // パターン1: /@lat,lng,zoom  （通常のマップURL）
+function parseLatLng(url) {
+  // パターン1: /@lat,lng,zoom
   const m1 = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
-  if (m1) { lat = parseFloat(m1[1]); lng = parseFloat(m1[2]); }
+  if (m1) return { lat: parseFloat(m1[1]), lng: parseFloat(m1[2]) };
+  // パターン2: ?q=lat,lng
+  const m2 = url.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (m2) return { lat: parseFloat(m2[1]), lng: parseFloat(m2[2]) };
+  // パターン3: ll=lat,lng
+  const m3 = url.match(/ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (m3) return { lat: parseFloat(m3[1]), lng: parseFloat(m3[2]) };
+  // パターン4: !3d lat !4d lng
+  const m4 = url.match(/!3d(-?\d+\.\d+).*?!4d(-?\d+\.\d+)/);
+  if (m4) return { lat: parseFloat(m4[1]), lng: parseFloat(m4[2]) };
+  return null;
+}
 
-  // パターン2: /place/.../@lat,lng  同上だが念のため
-  // パターン3: ?q=lat,lng  （短縮URLや共有URL）
-  if (!lat) {
-    const m2 = url.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
-    if (m2) { lat = parseFloat(m2[1]); lng = parseFloat(m2[2]); }
-  }
-
-  // パターン4: ll=lat,lng
-  if (!lat) {
-    const m3 = url.match(/ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
-    if (m3) { lat = parseFloat(m3[1]); lng = parseFloat(m3[2]); }
-  }
-
-  // パターン5: !3d lat !4d lng  （埋め込みURL等）
-  if (!lat) {
-    const m4 = url.match(/!3d(-?\d+\.\d+).*?!4d(-?\d+\.\d+)/);
-    if (m4) { lat = parseFloat(m4[1]); lng = parseFloat(m4[2]); }
-  }
-
+function setLatLngResult(lat, lng) {
+  const status = document.getElementById('latlngStatus');
   if (lat && lng && Math.abs(lat) <= 90 && Math.abs(lng) <= 180) {
     document.getElementById('fLat').value = lat.toFixed(6);
     document.getElementById('fLng').value = lng.toFixed(6);
     status.style.color = 'var(--accent)';
     status.textContent = '✅ 座標を取得しました (' + lat.toFixed(4) + ', ' + lng.toFixed(4) + ')';
-  } else {
-    document.getElementById('fLat').value = '';
-    document.getElementById('fLng').value = '';
-    status.style.color = 'var(--warn)';
-    status.textContent = url.length > 10 ? '⚠️ URLから座標を取得できませんでした。「共有」からコピーしたURLを試してください' : '';
+    return true;
   }
+  return false;
+}
+
+async function extractLatLng(url) {
+  const status = document.getElementById('latlngStatus');
+  if (!url) { status.textContent = ''; return; }
+
+  // まず直接パース（通常のGoogleマップURL）
+  const direct = parseLatLng(url);
+  if (direct && setLatLngResult(direct.lat, direct.lng)) return;
+
+  // 短縮URLの場合は展開して再試行
+  if (url.includes('goo.gl') || url.includes('maps.app') || url.length < 60) {
+    status.style.color = 'var(--text2)';
+    status.textContent = '🔄 URLを展開中...';
+    try {
+      const res = await fetch(
+        'https://api.unshorten.me/?requestedURL=' + encodeURIComponent(url),
+        { signal: AbortSignal.timeout(8000) }
+      );
+      if (!res.ok) throw new Error('API error');
+      const data = await res.json();
+      const expanded = data.resolvedURL || data.resolved_url || '';
+      if (expanded) {
+        const parsed = parseLatLng(expanded);
+        if (parsed && setLatLngResult(parsed.lat, parsed.lng)) return;
+      }
+    } catch (e) {
+      // APIが失敗した場合はフォールスルー
+    }
+  }
+
+  // すべて失敗
+  document.getElementById('fLat').value = '';
+  document.getElementById('fLng').value = '';
+  status.style.color = 'var(--warn)';
+  status.textContent = url.length > 10 ? '⚠️ 座標を取得できませんでした。ブラウザ版GoogleマップのアドレスバーのURLをお試しください' : '';
 }
 
 
