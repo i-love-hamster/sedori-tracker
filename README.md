@@ -178,7 +178,7 @@ Googleマップアプリで店舗を検索
 すべての訪問履歴・店舗データはあなたのスマホ（ブラウザのlocalStorage）に保存されます。
 
 **外部通信について**
-- GoogleマップのURLを貼り付けた際、短縮URL（goo.gl）の場合のみ座標取得のため [unshorten.me](https://unshorten.me) にURLを送信します
+- GoogleマップのURLを貼り付けた際、短縮URL（goo.gl）の場合のみ座標取得のため [corsproxy.io](https://corsproxy.io) にURLを送信します
 - バックアップ・復元のエクスポート/インポート機能はすべてローカルで完結します
 
 ソースコードはこのリポジトリで公開しており、HTMLファイルを直接確認することで動作を検証できます。
