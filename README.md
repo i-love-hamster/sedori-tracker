@@ -9,7 +9,7 @@
 
 ## 📱 デモ
 
-**→ [アプリを開く](https://your-username.github.io/sedori-tracker/)**
+**→ [アプリを開く](https://i-love-hamster.github.io/sedori-tracker/)**
 
 > ※ スマホのブラウザ（Safari / Chrome）で開くことを推奨します
 
@@ -230,4 +230,4 @@ MIT License — 自由に使用・改変・再配布できます。
 
 ---
 
-*ご意見・バグ報告は [Issues](https://github.com/your-username/sedori-tracker/issues) までお願いします*
+*ご意見・バグ報告は [Issues](https://github.com/i-love-hamster/sedori-tracker/issues) までお願いします*
