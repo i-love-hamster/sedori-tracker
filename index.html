@@ -88,13 +88,11 @@ html { scrollbar-gutter: stable; }
 .store-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 10px; transition: all 0.2s; }
 .store-card.selected   { border-color: var(--accent); background: rgba(0,229,160,0.05); box-shadow: 0 0 0 2px rgba(0,229,160,0.12); }
 .store-card.checked-in { border-color: var(--accent); background: rgba(0,229,160,0.06); }
-.store-card.overdue    { border-color: rgba(255,107,53,0.4); }
 .store-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
 .store-name { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
 .store-meta { font-size: 12px; color: var(--text2); display: flex; gap: 8px; flex-wrap: wrap; }
 .store-dist { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--accent2); white-space: nowrap; letter-spacing: 0.5px; }
 .badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
-.badge.overdue   { background: rgba(255,107,53,0.15); color: var(--warn); }
 .badge.ok        { background: rgba(0,229,160,0.1);   color: var(--accent); }
 .badge.never     { background: rgba(255,255,255,0.06); color: var(--text2); }
 .badge.active-ci { background: rgba(0,229,160,0.2);   color: var(--accent); border: 1px solid rgba(0,229,160,0.4); }
@@ -149,7 +147,7 @@ html { scrollbar-gutter: stable; }
 .btn-icon.chart:active  { background: rgba(124,77,255,0.15); color: var(--accent2); }
 
 /* FAB */
-.fab { position: fixed; bottom: 24px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); border: none; color: #fff; font-size: 24px; cursor: pointer; box-shadow: 0 4px 20px rgba(0,229,160,0.3); display: flex; align-items: center; justify-content: center; z-index: 50; transition: all 0.2s; }
+.fab { position: fixed; bottom: 24px; right: 20px; width: 56px; height: 56px; border-radius: 50%; background: var(--accent); border: none; color: #001a10; font-size: 24px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 20px rgba(0,229,160,0.3); display: flex; align-items: center; justify-content: center; z-index: 50; transition: all 0.2s; }
 .fab:active { transform: scale(0.93); }
 
 /* EMPTY */
@@ -160,10 +158,6 @@ html { scrollbar-gutter: stable; }
 /* TOAST */
 .toast { position: fixed; bottom: 84px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface2); border: 1px solid var(--border); border-radius: 50px; padding: 10px 20px; font-size: 13px; font-weight: 700; z-index: 300; opacity: 0; transition: all 0.3s; white-space: nowrap; max-width: 90vw; pointer-events: none; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-/* NOTIF BANNER */
-.notif-banner { background: rgba(124,77,255,0.1); border: 1px solid rgba(124,77,255,0.3); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; font-size: 13px; }
-.notif-banner button { margin-left: auto; flex-shrink: 0; padding: 6px 12px; background: var(--accent2); color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
 
 /* ===== STATS TAB ===== */
 .stat-day { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; }
@@ -268,10 +262,6 @@ html { scrollbar-gutter: stable; }
 <!-- HOME -->
 <div class="page active" id="tab-home">
   <div class="page-fixed">
-    <div id="notifBanner" class="notif-banner" style="display:none">
-      🔔 <span>通知を許可すると訪問リマインダーが届きます</span>
-      <button onclick="requestNotifPerm()">許可する</button>
-    </div>
     <div class="session-card">
       <div class="session-title">店舗せどり</div>
       <div class="session-store-label" id="sessionStoreLabel">出発したら開始してください</div>
@@ -388,10 +378,6 @@ html { scrollbar-gutter: stable; }
         <label class="form-label">経度</label>
         <input type="number" class="form-input" id="fLng" placeholder="自動入力されます" step="0.000001">
       </div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">再訪通知（日数）</label>
-      <input type="number" class="form-input" id="fDays" placeholder="例：7（7日ごとに通知）" min="1" max="365">
     </div>
     <button class="btn-primary" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);background-image:none" onclick="useCurrentLocation()">📍 現在地の座標を使う</button>
     <button class="btn-primary" onclick="saveStore()">保存する</button>
@@ -637,17 +623,18 @@ function renderNearby() {
 function buildStoreCard(s) {
   const last    = getLastVisitTs(s.id);
   const days    = last ? Math.floor((Date.now() - last) / 86400000) : null;
-  const overdue = s.days && days !== null && days >= s.days;
   const ci      = checkins[s.id];
   const isSel   = selectedStoreId === s.id;
 
   let badge = '';
-  if (ci)           badge = `<span class="badge active-ci">チェックイン中</span>`;
+  if (ci)              badge = `<span class="badge active-ci">チェックイン中</span>`;
   else if (days===null) badge = `<span class="badge never">未訪問</span>`;
-  else if (overdue) badge = `<span class="badge overdue">再訪時期 (${days}日前)</span>`;
-  else              badge = `<span class="badge ok">${days}日前</span>`;
+  else if (days === 0)  badge = `<span class="badge ok">今日</span>`;
+  else                  badge = `<span class="badge ok">${days}日前</span>`;
 
   const dist = s.dist !== null ? `<span class="store-dist">${formatDist(s.dist)}</span>` : '';
+
+  const lastVisitText = days !== null ? (days === 0 ? '最終訪問 今日' : `最終訪問 ${days}日前`) : '';
 
   const anyCheckedIn = Object.keys(checkins).length > 0;
 
@@ -671,11 +658,11 @@ function buildStoreCard(s) {
       <button class="btn-checkin in" onclick="checkin('${s.id}')">チェックイン</button>
     </div>`;
   }
-  const cls = ['store-card', ci?'checked-in':'', isSel?'selected':'', (!ci&&overdue)?'overdue':''].filter(Boolean).join(' ');
+  const cls = ['store-card', ci?'checked-in':'', isSel?'selected':''].filter(Boolean).join(' ');
   return `<div class="${cls}" id="scard-${s.id}">
     <div class="store-top">
       <div><div class="store-name">${s.name}</div>
-        <div class="store-meta">${(s.lat && s.lng)?`<span>📍 ${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</span>`:''} ${s.days?`<span>🔔 ${s.days}日ごと</span>`:''}</div>
+        <div class="store-meta">${(s.lat && s.lng)?`<span>📍 ${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</span>`:''} ${lastVisitText?`<span>📋 ${lastVisitText}</span>`:''}</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">${dist}${badge}</div>
     </div>${actions}</div>`;
@@ -860,6 +847,9 @@ function renderStoresList() {
   list.innerHTML = stores.map(s => {
     const storeVisits = visits.filter(v => v.storeId === s.id);
     const visitCount  = storeVisits.length;
+    const lastTs = getLastVisitTs(s.id);
+    const daysSince = lastTs ? Math.floor((Date.now() - lastTs) / 86400000) : null;
+    const lastVisitText = daysSince !== null ? (daysSince === 0 ? '最終訪問 今日' : `最終訪問 ${daysSince}日前`) : '';
     return `
     <div class="manage-store">
       <div class="manage-store-info">
@@ -867,7 +857,7 @@ function renderStoresList() {
         <div class="manage-store-addr">${s.lat ? `📍 ${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}` : (s.addr ? '🔗 マップURL登録済み（座標抽出失敗）' : '📍 座標未設定')}</div>
         <div style="font-size:11px;color:var(--text2);margin-top:2px">
           ${visitCount > 0 ? `📋 ${visitCount}回訪問` : '未訪問'}
-          ${s.days ? ` &nbsp;🔔 ${s.days}日ごと` : ''}
+          ${lastVisitText ? ` &nbsp;· ${lastVisitText}` : ''}
         </div>
       </div>
       <button class="btn-icon chart" onclick="openStoreDetail('${s.id}')" title="履歴を見る">📈</button>
@@ -1068,7 +1058,7 @@ function renderDataSummary() {
 // ===== ADD/EDIT MODAL =====
 function openAddModal() {
   editingId = null;
-  ['fName','fAddr','fLat','fLng','fDays'].forEach(id => document.getElementById(id).value = '');
+  ['fName','fAddr','fLat','fLng'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('latlngStatus').textContent = '';
   document.getElementById('modalTitle').textContent = '店舗を追加';
   document.getElementById('modalOverlay').classList.add('open');
@@ -1082,7 +1072,6 @@ function openEditModal(id) {
   document.getElementById('latlngStatus').textContent = (s.lat && s.lng) ? '✅ 座標取得済み (' + s.lat.toFixed(4) + ', ' + s.lng.toFixed(4) + ')' : '';
   document.getElementById('fLat').value  = s.lat   || '';
   document.getElementById('fLng').value  = s.lng   || '';
-  document.getElementById('fDays').value = s.days  || '';
   document.getElementById('modalOverlay').classList.add('open');
 }
 function closeModal(e) { if (e.target===document.getElementById('modalOverlay')) closeModalForce(); }
@@ -1124,7 +1113,6 @@ function saveStore() {
     addr: document.getElementById('fAddr').value.trim(),
     lat:  parseFloat(document.getElementById('fLat').value)  || null,
     lng:  parseFloat(document.getElementById('fLng').value)  || null,
-    days: parseInt(document.getElementById('fDays').value)   || null,
   };
   if (editingId) { stores[stores.findIndex(x=>x.id===editingId)] = s; }
   else stores.push(s);
@@ -1193,31 +1181,6 @@ function restoreConfirmBox() {
     </div>`;
 }
 
-// ===== NOTIFICATIONS =====
-function checkNotifBanner() {
-  if ('Notification' in window && Notification.permission === 'default')
-    document.getElementById('notifBanner').style.display = 'flex';
-}
-function requestNotifPerm() {
-  Notification.requestPermission().then(p => {
-    document.getElementById('notifBanner').style.display = 'none';
-    if (p === 'granted') { toast('通知を許可しました！'); scheduleNotifications(); }
-    else toast('通知が拒否されました');
-  });
-}
-function scheduleNotifications() {
-  if (Notification.permission !== 'granted') return;
-  stores.forEach(s => {
-    if (!s.days) return;
-    const last = getLastVisitTs(s.id); if (!last) return;
-    const d = Math.floor((Date.now() - last) / 86400000);
-    if (d >= s.days) new Notification('せどりトラッカー', {
-      body: `${s.name} の再訪時期です（${d}日経過）`,
-      icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🏪</text></svg>'
-    });
-  });
-}
-
 // ===== UTILS =====
 function formatDuration(ms) {
   const t = Math.floor(ms/1000), h = Math.floor(t/3600), m = Math.floor((t%3600)/60), s = t%60;
@@ -1244,9 +1207,7 @@ window.onload = () => {
   } else {
     updateSessionUI();
   }
-  renderNearby(); // 常に店舗一覧を描画
-  checkNotifBanner();
-  scheduleNotifications();
+  renderNearby();
 };
 </script>
 </body>
