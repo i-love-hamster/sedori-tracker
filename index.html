@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>せどりトラッカー</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Outfit:wght@400;600;700;800&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #0a0a0f;
@@ -20,35 +20,62 @@
   --text2: #888899;
   --border: rgba(255,255,255,0.08);
   --radius: 16px;
+  --font-display: 'Outfit', sans-serif;
+  --font-mono: 'Orbitron', monospace;
+  --font-body: 'Noto Sans JP', sans-serif;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-body { background: var(--bg); color: var(--text); font-family: 'Noto Sans JP', sans-serif; min-height: 100dvh; overflow-x: hidden; }
+html, body { height: 100%; overflow: hidden; }
+body { background: var(--bg); color: var(--text); font-family: var(--font-body); display: flex; flex-direction: column; }
+
+/* Prevent scrollbar layout shift */
+html { scrollbar-gutter: stable; }
 
 /* HEADER */
-.header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(10px); }
-.logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; z-index: 100; backdrop-filter: blur(10px); flex-shrink: 0; }
+.logo { font-family: var(--font-display); font-weight: 800; font-size: 20px; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .session-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; letter-spacing: 0.5px; }
 .session-badge.off { background: rgba(255,255,255,0.06); color: var(--text2); }
-.session-badge.on  { background: rgba(0,229,160,0.15); color: var(--accent); border: 1px solid rgba(0,229,160,0.3); }
+.session-badge.on  { background: rgba(0,229,160,0.15); color: var(--accent); border: 1px solid rgba(0,229,160,0.3); animation: badgePulse 2s ease-in-out infinite; }
+@keyframes badgePulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
 
 /* TABS */
-.tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; flex-shrink: 0; }
 .tab { padding: 12px 12px; font-size: 12px; font-weight: 700; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; flex-shrink: 0; }
 .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-/* PAGES */
-.page { display: none; padding: 16px; max-width: 600px; margin: 0 auto; padding-bottom: 80px; }
-.page.active { display: block; }
+/* PAGES — fill remaining viewport height */
+.page { display: none; flex: 1; min-height: 0; max-width: 600px; width: 100%; margin: 0 auto; flex-direction: column; }
+.page.active { display: flex; }
+
+/* Fixed header area within each page (non-scrolling) */
+.page-fixed { flex-shrink: 0; padding: 16px 16px 10px; }
+.page-fixed .section-title:last-child { margin-bottom: 0; }
+
+/* Scrollable list area within each page */
+.page-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 6px 16px 16px; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+/* Hide scrollbar visually but keep functional */
+.page-scroll::-webkit-scrollbar { width: 0; background: transparent; }
+.page-scroll { scrollbar-width: none; }
 
 /* SESSION CARD */
-.session-card { background: linear-gradient(135deg, #0d1f1a, #0f0f1e); border: 1px solid rgba(0,229,160,0.2); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; text-align: center; }
-.session-title { font-size: 11px; color: var(--text2); margin-bottom: 6px; letter-spacing: 2px; text-transform: uppercase; }
-.session-store-label { font-size: 13px; color: var(--text2); margin-bottom: 12px; min-height: 20px; }
+.session-card { background: linear-gradient(135deg, #0d1f1a, #0f0f1e); border: 1px solid rgba(0,229,160,0.2); border-radius: var(--radius); padding: 24px 20px; margin-bottom: 16px; text-align: center; position: relative; overflow: hidden; }
+.session-card::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 0%, rgba(0,229,160,0.06) 0%, transparent 70%); pointer-events: none; }
+.session-title { font-size: 11px; color: var(--text2); margin-bottom: 6px; letter-spacing: 2px; text-transform: uppercase; position: relative; }
+.session-store-label { font-size: 13px; color: var(--text2); margin-bottom: 12px; min-height: 20px; position: relative; }
 .session-store-label span { color: var(--accent); font-weight: 700; }
-.session-timer { font-family: 'Syne', sans-serif; font-size: 44px; font-weight: 800; letter-spacing: 2px; margin-bottom: 14px; font-variant-numeric: tabular-nums; display: none; color: var(--accent); line-height: 1; }
-.session-timer .dig { display: inline-block; min-width: 2ch; text-align: center; }
-.session-timer .sep { color: var(--accent2); font-size: 34px; position: relative; top: -3px; margin: 0 1px; }
-.btn-session { display: inline-flex; align-items: center; gap: 8px; padding: 13px 28px; border-radius: 50px; font-size: 15px; font-weight: 700; font-family: 'Syne', sans-serif; border: none; cursor: pointer; transition: all 0.2s; }
+
+/* ===== TIMER DISPLAY ===== */
+.session-timer { display: none; margin-bottom: 18px; position: relative; padding: 8px 0; }
+.session-timer.active { display: flex; align-items: baseline; justify-content: center; gap: 2px; }
+.timer-group { display: flex; align-items: baseline; }
+.timer-digit { font-family: var(--font-mono); font-size: 48px; font-weight: 700; color: var(--accent); letter-spacing: 2px; line-height: 1; text-shadow: 0 0 30px rgba(0,229,160,0.3); min-width: 1.15ch; text-align: center; display: inline-block; }
+.timer-sep { font-family: var(--font-mono); font-size: 36px; font-weight: 400; color: var(--accent2); line-height: 1; padding: 0 3px; opacity: 0.7; position: relative; top: -2px; }
+.timer-sep.blink { animation: sepBlink 1s step-end infinite; }
+@keyframes sepBlink { 0%,100%{opacity:0.7} 50%{opacity:0.2} }
+.timer-label { font-size: 10px; color: var(--text2); letter-spacing: 1px; text-transform: uppercase; margin-top: 6px; font-family: var(--font-display); }
+
+.btn-session { display: inline-flex; align-items: center; gap: 8px; padding: 13px 28px; border-radius: 50px; font-size: 15px; font-weight: 700; font-family: var(--font-display); border: none; cursor: pointer; transition: all 0.2s; position: relative; }
 .btn-session.start { background: linear-gradient(135deg, var(--accent), #00b37a); color: #001a10; }
 .btn-session.stop  { background: linear-gradient(135deg, var(--warn), #cc4400); color: #fff; }
 .btn-session:active { transform: scale(0.97); }
@@ -65,20 +92,20 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans JP', s
 .store-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
 .store-name { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
 .store-meta { font-size: 12px; color: var(--text2); display: flex; gap: 8px; flex-wrap: wrap; }
-.store-dist { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: var(--accent2); white-space: nowrap; }
+.store-dist { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--accent2); white-space: nowrap; letter-spacing: 0.5px; }
 .badge { font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; }
 .badge.overdue   { background: rgba(255,107,53,0.15); color: var(--warn); }
 .badge.ok        { background: rgba(0,229,160,0.1);   color: var(--accent); }
 .badge.never     { background: rgba(255,255,255,0.06); color: var(--text2); }
 .badge.active-ci { background: rgba(0,229,160,0.2);   color: var(--accent); border: 1px solid rgba(0,229,160,0.4); }
 .store-actions { margin-top: 10px; display: flex; gap: 8px; }
-.btn-select { flex: 1; padding: 9px; border-radius: 10px; border: 1px solid var(--accent); background: transparent; color: var(--accent); font-size: 13px; font-weight: 700; font-family: 'Noto Sans JP', sans-serif; cursor: pointer; transition: all 0.2s; }
+.btn-select { flex: 1; padding: 9px; border-radius: 10px; border: 1px solid var(--accent); background: transparent; color: var(--accent); font-size: 13px; font-weight: 700; font-family: var(--font-body); cursor: pointer; transition: all 0.2s; }
 .btn-select.selected-btn { background: var(--accent); color: #001a10; }
-.btn-checkin { flex: 1; padding: 9px; border-radius: 10px; border: none; font-size: 13px; font-weight: 700; font-family: 'Noto Sans JP', sans-serif; cursor: pointer; transition: all 0.2s; }
+.btn-checkin { flex: 1; padding: 9px; border-radius: 10px; border: none; font-size: 13px; font-weight: 700; font-family: var(--font-body); cursor: pointer; transition: all 0.2s; }
 .btn-checkin.in  { background: var(--accent); color: #001a10; }
 .btn-checkin.out { background: rgba(255,107,53,0.15); color: var(--warn); border: 1px solid rgba(255,107,53,0.3); }
 .btn-checkin:active, .btn-select:active { transform: scale(0.98); }
-.checkin-timer { font-family: 'Syne', sans-serif; font-size: 13px; color: var(--accent); font-weight: 700; margin-top: 6px; text-align: center; }
+.checkin-timer { font-family: var(--font-mono); font-size: 13px; color: var(--accent); font-weight: 600; margin-top: 6px; text-align: center; letter-spacing: 1px; }
 
 /* GPS */
 .btn-gps { display: flex; align-items: center; gap: 8px; width: 100%; padding: 12px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: 14px; font-weight: 700; cursor: pointer; margin-bottom: 14px; transition: all 0.2s; }
@@ -92,16 +119,16 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans JP', s
 .modal { background: var(--surface); border-radius: 24px 24px 0 0; padding: 20px 18px 40px; width: 100%; max-width: 600px; border-top: 1px solid var(--border); animation: slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1); max-height: 92dvh; overflow-y: auto; }
 @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
 .modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 18px; }
-.modal-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; margin-bottom: 18px; }
+.modal-title { font-family: var(--font-display); font-size: 18px; font-weight: 800; margin-bottom: 18px; }
 
 /* FORM */
 .form-group { margin-bottom: 12px; }
 .form-label { font-size: 11px; font-weight: 700; color: var(--text2); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px; display: block; }
-.form-input { width: 100%; padding: 11px 13px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 15px; font-family: 'Noto Sans JP', sans-serif; outline: none; transition: border-color 0.2s; }
+.form-input { width: 100%; padding: 11px 13px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 15px; font-family: var(--font-body); outline: none; transition: border-color 0.2s; }
 .form-input:focus { border-color: rgba(0,229,160,0.4); }
 .form-row { display: flex; gap: 8px; }
 .form-row .form-group { flex: 1; }
-.btn-primary  { width: 100%; padding: 13px; background: linear-gradient(135deg, var(--accent), #00b37a); color: #001a10; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; font-family: 'Syne', sans-serif; cursor: pointer; margin-top: 8px; transition: all 0.2s; }
+.btn-primary  { width: 100%; padding: 13px; background: linear-gradient(135deg, var(--accent), #00b37a); color: #001a10; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; font-family: var(--font-display); cursor: pointer; margin-top: 8px; transition: all 0.2s; }
 .btn-primary:active { transform: scale(0.98); }
 .btn-secondary { width: 100%; padding: 11px; background: transparent; color: var(--text2); border: 1px solid var(--border); border-radius: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; }
 
@@ -109,7 +136,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans JP', s
 .history-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 13px 14px; margin-bottom: 8px; }
 .history-store { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
 .history-meta { font-size: 12px; color: var(--text2); display: flex; gap: 10px; flex-wrap: wrap; }
-.history-duration { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: var(--accent2); }
+.history-duration { font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--accent2); letter-spacing: 0.5px; }
 
 /* MANAGE STORES */
 .manage-store { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 13px 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
@@ -142,67 +169,58 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans JP', s
 .stat-day { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; }
 .stat-day-header { padding: 14px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
 .stat-day-header:active { background: var(--surface2); }
-.stat-day-date { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 800; color: var(--text); }
+.stat-day-date { font-family: var(--font-display); font-size: 15px; font-weight: 800; color: var(--text); }
 .stat-day-summary { font-size: 12px; color: var(--text2); margin-top: 2px; }
 .stat-day-arrow { font-size: 12px; color: var(--text2); transition: transform 0.2s; }
 .stat-day-arrow.open { transform: rotate(180deg); }
 .stat-day-body { display: none; padding: 0 16px 16px; border-top: 1px solid var(--border); }
 .stat-day-body.open { display: block; }
-
-/* サマリー数値グリッド */
 .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
 .stat-cell { background: var(--surface2); border-radius: 12px; padding: 12px; text-align: center; }
 .stat-cell-label { font-size: 10px; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
-.stat-cell-value { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; }
+.stat-cell-value { font-family: var(--font-display); font-size: 18px; font-weight: 800; }
 .stat-cell-value.accent  { color: var(--accent); }
 .stat-cell-value.accent2 { color: var(--accent2); }
 .stat-cell-value.warn    { color: var(--warn); }
 .stat-cell-value.text2   { color: var(--text2); }
-
-/* 店舗せどり内訪問リスト */
 .stat-visit { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
 .stat-visit:last-child { border-bottom: none; }
 .stat-visit-name { font-weight: 700; }
 .stat-visit-time { color: var(--text2); font-size: 12px; }
-.stat-visit-dur  { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--accent2); font-size: 13px; }
+.stat-visit-dur  { font-family: var(--font-mono); font-weight: 600; color: var(--accent2); font-size: 12px; letter-spacing: 0.5px; }
 
 /* ===== STORE DETAIL MODAL ===== */
 .store-detail-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
 .store-detail-back { width: 34px; height: 34px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; flex-shrink: 0; }
-.store-detail-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; }
-
-/* 棒グラフ */
+.store-detail-title { font-family: var(--font-display); font-size: 18px; font-weight: 800; }
 .chart-wrap { margin: 14px 0 8px; }
 .chart-label { font-size: 11px; color: var(--text2); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
 .chart-bars { display: flex; align-items: flex-end; gap: 6px; height: 80px; }
 .chart-bar-col { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; min-width: 0; }
 .chart-bar { width: 100%; border-radius: 4px 4px 0 0; background: linear-gradient(180deg, var(--accent2), #4a2d99); transition: height 0.4s ease; min-height: 4px; }
 .chart-bar.latest { background: linear-gradient(180deg, var(--accent), #00a070); }
-.chart-bar-val { font-family: 'Syne', sans-serif; font-size: 9px; font-weight: 700; color: var(--text2); white-space: nowrap; }
+.chart-bar-val { font-family: var(--font-mono); font-size: 9px; font-weight: 600; color: var(--text2); white-space: nowrap; letter-spacing: 0.5px; }
 .chart-bar-idx { font-size: 9px; color: var(--text2); }
-
-/* 店舗別履歴リスト */
 .store-hist-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
 .store-hist-item:last-child { border-bottom: none; }
 .store-hist-date { font-size: 13px; font-weight: 700; }
 .store-hist-time { font-size: 11px; color: var(--text2); }
-.store-hist-dur  { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--accent); font-size: 14px; }
-
-/* 平均・傾向 */
+.store-hist-dur  { font-family: var(--font-mono); font-weight: 600; color: var(--accent); font-size: 13px; letter-spacing: 0.5px; }
 .trend-row { display: flex; gap: 8px; margin-bottom: 12px; }
 .trend-chip { flex: 1; background: var(--surface2); border-radius: 10px; padding: 10px; text-align: center; }
 .trend-chip-label { font-size: 10px; color: var(--text2); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
-.trend-chip-val { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800; color: var(--accent); }
+.trend-chip-val { font-family: var(--font-display); font-size: 15px; font-weight: 800; color: var(--accent); }
 .trend-chip-val.down { color: var(--accent); }
 .trend-chip-val.up   { color: var(--warn); }
 .trend-chip-val.flat { color: var(--text2); }
+
 /* ===== DATA TAB ===== */
 .data-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; display: flex; gap: 14px; align-items: flex-start; }
 .data-card-icon { font-size: 28px; flex-shrink: 0; margin-top: 2px; }
 .data-card-body { flex: 1; min-width: 0; }
-.data-card-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 800; margin-bottom: 5px; }
+.data-card-title { font-family: var(--font-display); font-size: 15px; font-weight: 800; margin-bottom: 5px; }
 .data-card-desc { font-size: 12px; color: var(--text2); line-height: 1.6; margin-bottom: 12px; }
-.btn-data { width: 100%; padding: 11px; border-radius: 10px; font-size: 13px; font-weight: 700; font-family: 'Syne', sans-serif; border: none; cursor: pointer; transition: all 0.2s; }
+.btn-data { width: 100%; padding: 11px; border-radius: 10px; font-size: 13px; font-weight: 700; font-family: var(--font-display); border: none; cursor: pointer; transition: all 0.2s; }
 .btn-data.export { background: linear-gradient(135deg, var(--accent2), #4a2d99); color: #fff; }
 .btn-data.import { background: linear-gradient(135deg, var(--accent), #00b37a); color: #001a10; }
 .btn-data:active { transform: scale(0.98); }
@@ -210,8 +228,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans JP', s
 .data-summary-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
 .data-summary-row:last-child { border-bottom: none; }
 .data-summary-label { color: var(--text2); }
-.data-summary-value { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--accent); }
-
+.data-summary-value { font-family: var(--font-mono); font-weight: 600; color: var(--accent); font-size: 12px; letter-spacing: 0.5px; }
 
 /* 確認ダイアログ */
 .confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 400; display: none; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(6px); }
@@ -219,10 +236,10 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans JP', s
 .confirm-box { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 24px 20px; width: 100%; max-width: 340px; text-align: center; animation: popIn 0.2s cubic-bezier(0.34,1.56,0.64,1); }
 @keyframes popIn { from{transform:scale(0.85);opacity:0} to{transform:scale(1);opacity:1} }
 .confirm-icon { font-size: 36px; margin-bottom: 12px; }
-.confirm-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+.confirm-title { font-family: var(--font-display); font-size: 18px; font-weight: 800; margin-bottom: 8px; }
 .confirm-msg { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 20px; }
 .confirm-btns { display: flex; gap: 10px; }
-.confirm-btn { flex: 1; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 700; font-family: 'Syne', sans-serif; border: none; cursor: pointer; transition: all 0.2s; }
+.confirm-btn { flex: 1; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 700; font-family: var(--font-display); border: none; cursor: pointer; transition: all 0.2s; }
 .confirm-btn.cancel   { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
 .confirm-btn.ok-start { background: linear-gradient(135deg, var(--accent), #00b37a); color: #001a10; }
 .confirm-btn.ok-stop  { background: linear-gradient(135deg, var(--warn), #cc4400); color: #fff; }
@@ -250,75 +267,99 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans JP', s
 
 <!-- HOME -->
 <div class="page active" id="tab-home">
-  <div id="notifBanner" class="notif-banner" style="display:none">
-    🔔 <span>通知を許可すると訪問リマインダーが届きます</span>
-    <button onclick="requestNotifPerm()">許可する</button>
-  </div>
-  <div class="session-card">
-    <div class="session-title">店舗せどり</div>
-    <div class="session-store-label" id="sessionStoreLabel">出発したら開始してください</div>
-    <div class="session-timer" id="sessionTimer">
-      <span class="dig" id="timerH">00</span><span class="sep">:</span><span class="dig" id="timerM">00</span><span class="sep">'</span><span class="dig" id="timerS">00</span>
+  <div class="page-fixed">
+    <div id="notifBanner" class="notif-banner" style="display:none">
+      🔔 <span>通知を許可すると訪問リマインダーが届きます</span>
+      <button onclick="requestNotifPerm()">許可する</button>
     </div>
-    <button class="btn-session start" id="sessionBtn" onclick="toggleSession()">▶ 店舗せどり開始</button>
+    <div class="session-card">
+      <div class="session-title">店舗せどり</div>
+      <div class="session-store-label" id="sessionStoreLabel">出発したら開始してください</div>
+      <div class="session-timer" id="sessionTimer">
+        <div class="timer-group">
+          <span class="timer-digit" id="timerH1">0</span><span class="timer-digit" id="timerH2">0</span>
+        </div>
+        <span class="timer-sep blink">:</span>
+        <div class="timer-group">
+          <span class="timer-digit" id="timerM1">0</span><span class="timer-digit" id="timerM2">0</span>
+        </div>
+        <span class="timer-sep blink">:</span>
+        <div class="timer-group">
+          <span class="timer-digit" id="timerS1">0</span><span class="timer-digit" id="timerS2">0</span>
+        </div>
+      </div>
+      <button class="btn-session start" id="sessionBtn" onclick="toggleSession()">▶ 店舗せどり開始</button>
+    </div>
+    <button class="btn-gps" onclick="refreshLocation()">
+      <div class="gps-dot" id="gpsDot"></div>
+      <span id="gpsText">現在地を取得（距離順ソート）</span>
+    </button>
+    <div class="section-title">登録店舗</div>
   </div>
-  <button class="btn-gps" onclick="refreshLocation()">
-    <div class="gps-dot" id="gpsDot"></div>
-    <span id="gpsText">現在地を取得する</span>
-  </button>
-  <div class="section-title">近くの登録店舗</div>
-  <div id="nearbyList">
-    <div class="empty"><div class="empty-icon">📍</div><div class="empty-text">現在地を取得して<br>近くの店舗を表示します</div></div>
+  <div class="page-scroll">
+    <div id="nearbyList"></div>
   </div>
 </div>
 
 <!-- STORES -->
 <div class="page" id="tab-stores">
-  <div class="section-title">登録店舗</div>
-  <div id="storesList"></div>
-  <div style="height:80px"></div>
+  <div class="page-fixed">
+    <div class="section-title">登録店舗</div>
+  </div>
+  <div class="page-scroll">
+    <div id="storesList"></div>
+    <div style="height:80px"></div>
+  </div>
 </div>
 
 <!-- HISTORY -->
 <div class="page" id="tab-history">
-  <div class="section-title">訪問履歴</div>
-  <div id="historyList"></div>
+  <div class="page-fixed">
+    <div class="section-title">訪問履歴</div>
+  </div>
+  <div class="page-scroll">
+    <div id="historyList"></div>
+  </div>
 </div>
 
 <!-- STATS -->
 <div class="page" id="tab-stats">
-  <div class="section-title">店舗せどり記録</div>
-  <div id="statsList">
-    <div class="empty"><div class="empty-icon">📊</div><div class="empty-text">店舗せどりを記録すると<br>ここに統計が表示されます</div></div>
+  <div class="page-fixed">
+    <div class="section-title">店舗せどり記録</div>
+  </div>
+  <div class="page-scroll">
+    <div id="statsList">
+      <div class="empty"><div class="empty-icon">📊</div><div class="empty-text">店舗せどりを記録すると<br>ここに統計が表示されます</div></div>
+    </div>
   </div>
 </div>
 
-
 <!-- DATA -->
 <div class="page" id="tab-data">
-  <div class="section-title">バックアップ・復元</div>
-
-  <div class="data-card">
-    <div class="data-card-icon">📤</div>
-    <div class="data-card-body">
-      <div class="data-card-title">データをエクスポート</div>
-      <div class="data-card-desc">店舗・訪問履歴・せどり記録をすべてJSONファイルに保存します。Googleドライブ・Dropbox・iCloud等に保存できます。機種変更時のバックアップに活用ください。</div>
-      <button class="btn-data export" onclick="exportData()">エクスポートする</button>
-    </div>
+  <div class="page-fixed">
+    <div class="section-title">バックアップ・復元</div>
   </div>
-
-  <div class="data-card">
-    <div class="data-card-icon">📥</div>
-    <div class="data-card-body">
-      <div class="data-card-title">データをインポート</div>
-      <div class="data-card-desc">以前エクスポートしたJSONファイルを読み込みます。Googleドライブ・Dropbox・iCloud等から選択できます。<br><strong style="color:var(--warn)">⚠️ 現在のデータに追加されます（上書きではありません）</strong></div>
-      <button class="btn-data import" onclick="document.getElementById('importFile').click()">インポートする</button>
-      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+  <div class="page-scroll">
+    <div class="data-card">
+      <div class="data-card-icon">📤</div>
+      <div class="data-card-body">
+        <div class="data-card-title">データをエクスポート</div>
+        <div class="data-card-desc">店舗・訪問履歴・せどり記録をすべてJSONファイルに保存します。Googleドライブ・Dropbox・iCloud等に保存できます。機種変更時のバックアップに活用ください。</div>
+        <button class="btn-data export" onclick="exportData()">エクスポートする</button>
+      </div>
     </div>
+    <div class="data-card">
+      <div class="data-card-icon">📥</div>
+      <div class="data-card-body">
+        <div class="data-card-title">データをインポート</div>
+        <div class="data-card-desc">以前エクスポートしたJSONファイルを読み込みます。Googleドライブ・Dropbox・iCloud等から選択できます。<br><strong style="color:var(--warn)">⚠️ 現在のデータに追加されます（上書きではありません）</strong></div>
+        <button class="btn-data import" onclick="document.getElementById('importFile').click()">インポートする</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+      </div>
+    </div>
+    <div class="section-title" style="margin-top:20px">データ概要</div>
+    <div class="data-summary" id="dataSummary"></div>
   </div>
-
-  <div class="section-title" style="margin-top:20px">データ概要</div>
-  <div class="data-summary" id="dataSummary"></div>
 </div>
 
 <!-- FAB -->
@@ -389,8 +430,8 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans JP', s
 // ===== STATE =====
 let stores   = JSON.parse(localStorage.getItem('sedori_stores')   || '[]');
 let visits   = JSON.parse(localStorage.getItem('sedori_history')  || '[]');
-let sessions = JSON.parse(localStorage.getItem('sedori_sessions') || '[]'); // 完了セッション履歴
-let session  = JSON.parse(localStorage.getItem('sedori_session')  || 'null'); // 進行中セッション
+let sessions = JSON.parse(localStorage.getItem('sedori_sessions') || '[]');
+let session  = JSON.parse(localStorage.getItem('sedori_session')  || 'null');
 let checkins = JSON.parse(localStorage.getItem('sedori_checkins') || '{}');
 let currentLat = null, currentLng = null;
 let sessionInterval = null, checkinIntervals = {};
@@ -419,6 +460,8 @@ function switchTab(name, el) {
 }
 
 // ===== CONFIRM DIALOG =====
+// ★ BUG FIX: confirmCallback を closeConfirm() で null にした後に呼んでいたため
+//    コールバックが実行されなかった。修正: 先にコールバックを退避してから close する
 let confirmCallback = null;
 function showConfirm({ icon, title, msg, okLabel, okClass, onOk }) {
   document.getElementById('confirmIcon').textContent  = icon;
@@ -434,7 +477,11 @@ function closeConfirm() {
   document.getElementById('confirmOverlay').classList.remove('open');
   confirmCallback = null;
 }
-function confirmOk() { closeConfirm(); if (confirmCallback) confirmCallback(); }
+function confirmOk() {
+  const cb = confirmCallback;   // ★ 先に退避
+  closeConfirm();               // ★ これで confirmCallback = null になるが
+  if (cb) cb();                 // ★ 退避した cb を実行するので問題なし
+}
 
 // ===== SESSION =====
 function toggleSession() {
@@ -460,6 +507,7 @@ function doStartSession() {
   startSessionTimer();
   if (selectedStoreId) checkin(selectedStoreId, true);
   save();
+  renderNearby();
   const s = selectedStoreId ? stores.find(x => x.id === selectedStoreId) : null;
   toast(s ? s.name + ' で店舗せどり開始！' : '店舗せどり開始！');
 }
@@ -491,16 +539,18 @@ function updateSessionUI() {
   if (session) {
     btn.className = 'btn-session stop'; btn.innerHTML = '■ 店舗せどり終了'; btn.disabled = false;
     badge.className = 'session-badge on'; badge.textContent = '● せどり中';
-    timer.style.display = 'block';
-    const s = stores.find(x => x.id === session.storeId);
-    label.innerHTML = `<span>${s?.name || '不明'}</span> で店舗せどり中`;
+    timer.className = 'session-timer active';
+    const s = session.storeId ? stores.find(x => x.id === session.storeId) : null;
+    if (s) {
+      label.innerHTML = `<span>${s.name}</span> で店舗せどり中`;
+    } else {
+      label.textContent = '店舗せどり中';
+    }
   } else {
     btn.className = 'btn-session start'; btn.innerHTML = '▶ 店舗せどり開始'; btn.disabled = false;
     badge.className = 'session-badge off'; badge.textContent = '● 停止中';
-    timer.style.display = 'none';
-    document.getElementById('timerH').textContent = '00';
-    document.getElementById('timerM').textContent = '00';
-    document.getElementById('timerS').textContent = '00';
+    timer.className = 'session-timer';
+    setTimerDigits(0, 0, 0);
     if (selectedStoreId) {
       const s = stores.find(x => x.id === selectedStoreId);
       label.innerHTML = `<span>${s?.name}</span> を選択中（自動チェックイン）`;
@@ -510,15 +560,28 @@ function updateSessionUI() {
   }
 }
 
+function setTimerDigits(h, m, s) {
+  const hp = pad(h), mp = pad(m), sp = pad(s);
+  document.getElementById('timerH1').textContent = hp[0];
+  document.getElementById('timerH2').textContent = hp[1];
+  document.getElementById('timerM1').textContent = mp[0];
+  document.getElementById('timerM2').textContent = mp[1];
+  document.getElementById('timerS1').textContent = sp[0];
+  document.getElementById('timerS2').textContent = sp[1];
+}
+
 function startSessionTimer() {
   clearInterval(sessionInterval);
   sessionInterval = setInterval(() => {
     if (!session) return;
     const t = Math.floor((Date.now() - session.start) / 1000);
-    document.getElementById('timerH').textContent = pad(Math.floor(t / 3600));
-    document.getElementById('timerM').textContent = pad(Math.floor((t % 3600) / 60));
-    document.getElementById('timerS').textContent = pad(t % 60);
+    setTimerDigits(Math.floor(t / 3600), Math.floor((t % 3600) / 60), t % 60);
   }, 1000);
+  // 即座に1回実行
+  if (session) {
+    const t = Math.floor((Date.now() - session.start) / 1000);
+    setTimerDigits(Math.floor(t / 3600), Math.floor((t % 3600) / 60), t % 60);
+  }
 }
 
 // ===== SELECT STORE =====
@@ -586,6 +649,8 @@ function buildStoreCard(s) {
 
   const dist = s.dist !== null ? `<span class="store-dist">${formatDist(s.dist)}</span>` : '';
 
+  const anyCheckedIn = Object.keys(checkins).length > 0;
+
   let actions = '';
   if (!session) {
     actions = `<div class="store-actions">
@@ -596,6 +661,11 @@ function buildStoreCard(s) {
     actions = `<div class="store-actions">
       <button class="btn-checkin out" onclick="checkout('${s.id}')">チェックアウト</button>
     </div><div class="checkin-timer" id="ci-timer-${s.id}">滞在中...</div>`;
+  } else if (anyCheckedIn) {
+    // 他の店舗がチェックイン中 → この店舗はチェックイン不可
+    actions = `<div class="store-actions">
+      <button class="btn-checkin in" disabled style="opacity:0.3;cursor:not-allowed">チェックイン</button>
+    </div><div style="font-size:11px;color:var(--text2);text-align:center;margin-top:4px">他の店舗に滞在中</div>`;
   } else {
     actions = `<div class="store-actions">
       <button class="btn-checkin in" onclick="checkin('${s.id}')">チェックイン</button>
@@ -605,7 +675,7 @@ function buildStoreCard(s) {
   return `<div class="${cls}" id="scard-${s.id}">
     <div class="store-top">
       <div><div class="store-name">${s.name}</div>
-        <div class="store-meta">${s.addr?`<span>📍 ${s.addr}</span>`:''} ${s.days?`<span>🔔 ${s.days}日ごと</span>`:''}</div>
+        <div class="store-meta">${(s.lat && s.lng)?`<span>📍 ${s.lat.toFixed(4)}, ${s.lng.toFixed(4)}</span>`:''} ${s.days?`<span>🔔 ${s.days}日ごと</span>`:''}</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">${dist}${badge}</div>
     </div>${actions}</div>`;
@@ -701,14 +771,11 @@ function renderStats() {
     list.innerHTML = `<div class="empty"><div class="empty-icon">📊</div><div class="empty-text">店舗せどりを記録すると<br>ここに統計が表示されます</div></div>`;
     return;
   }
-
   list.innerHTML = sessions.map((sess, idx) => {
-    // この店舗せどり内の visits を抽出
     const sessVisits = visits.filter(v => v.sessionId === sess.id);
     const stayTotal  = sessVisits.reduce((a, v) => a + v.duration, 0);
     const moveMs     = sess.totalMs - stayTotal;
     const visitCount = sessVisits.length;
-
     const visitRows = sessVisits.map(v => `
       <div class="stat-visit">
         <div><div class="stat-visit-name">${v.storeName}</div>
@@ -716,7 +783,6 @@ function renderStats() {
         </div>
         <div class="stat-visit-dur">${formatDuration(v.duration)}</div>
       </div>`).join('');
-
     return `
       <div class="stat-day">
         <div class="stat-day-header" onclick="toggleStatDay('sd-${idx}', this)">
@@ -791,14 +857,11 @@ function openStoreDetail(storeId) {
   const s = stores.find(x => x.id === storeId);
   if (!s) return;
   document.getElementById('storeDetailTitle').textContent = s.name;
-
-  const storeVisits = visits.filter(v => v.storeId === storeId).slice().reverse(); // 古い順
+  const storeVisits = visits.filter(v => v.storeId === storeId).slice().reverse();
   const content     = document.getElementById('storeDetailContent');
-
   if (!storeVisits.length) {
     content.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">まだ訪問記録がありません</div></div>`;
   } else {
-    // 統計
     const durs   = storeVisits.map(v => v.duration);
     const avgMs  = durs.reduce((a,b)=>a+b,0) / durs.length;
     const minMs  = Math.min(...durs);
@@ -814,8 +877,6 @@ function openStoreDetail(storeId) {
       else if (diff > 60000)  { trendLabel = '📈 増加中';   trendClass = 'up'; }
       else                    { trendLabel = '➡ 横ばい';   trendClass = 'flat'; }
     }
-
-    // 棒グラフ
     const maxDur = Math.max(...durs);
     const bars = storeVisits.map((v, i) => {
       const pct = maxDur > 0 ? (v.duration / maxDur) * 100 : 0;
@@ -826,8 +887,6 @@ function openStoreDetail(storeId) {
         <div class="chart-bar-idx">${i+1}</div>
       </div>`;
     }).join('');
-
-    // 履歴リスト（新しい順）
     const histRows = storeVisits.slice().reverse().map(v => `
       <div class="store-hist-item">
         <div><div class="store-hist-date">${v.date}</div>
@@ -835,7 +894,6 @@ function openStoreDetail(storeId) {
         </div>
         <div class="store-hist-dur">${formatDuration(v.duration)}</div>
       </div>`).join('');
-
     content.innerHTML = `
       <div class="trend-row">
         <div class="trend-chip"><div class="trend-chip-label">平均滞在</div><div class="trend-chip-val">${formatDuration(avgMs)}</div></div>
@@ -857,16 +915,12 @@ function closeStoreDetailForce() { document.getElementById('storeDetailOverlay')
 
 // ===== GOOGLE MAPS URL PARSER =====
 function parseLatLng(url) {
-  // パターン1: /@lat,lng,zoom
   const m1 = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
   if (m1) return { lat: parseFloat(m1[1]), lng: parseFloat(m1[2]) };
-  // パターン2: ?q=lat,lng
   const m2 = url.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
   if (m2) return { lat: parseFloat(m2[1]), lng: parseFloat(m2[2]) };
-  // パターン3: ll=lat,lng
   const m3 = url.match(/ll=(-?\d+\.\d+),(-?\d+\.\d+)/);
   if (m3) return { lat: parseFloat(m3[1]), lng: parseFloat(m3[2]) };
-  // パターン4: !3d lat !4d lng
   const m4 = url.match(/!3d(-?\d+\.\d+).*?!4d(-?\d+\.\d+)/);
   if (m4) return { lat: parseFloat(m4[1]), lng: parseFloat(m4[2]) };
   return null;
@@ -887,69 +941,41 @@ function setLatLngResult(lat, lng) {
 async function extractLatLng(url) {
   const status = document.getElementById('latlngStatus');
   if (!url) { status.textContent = ''; return; }
-
-  // まず直接パース（通常のGoogleマップURL）
   const direct = parseLatLng(url);
   if (direct && setLatLngResult(direct.lat, direct.lng)) return;
-
-  // 短縮URLの場合は展開して再試行
   if (url.includes('goo.gl') || url.includes('maps.app') || url.length < 80) {
     status.style.color = 'var(--text2)';
     status.textContent = '🔄 URLを展開中...';
     try {
-      // mode:'no-cors' でfetchするとリダイレクトに追随しつつ response.url に最終URLが入る
-      const res = await fetch(url, {
-        method: 'GET',
-        mode: 'no-cors',
-        redirect: 'follow',
-        signal: AbortSignal.timeout(10000)
-      });
-      // no-cors では response.url にリダイレクト後の最終URLが入る
+      const res = await fetch(url, { method: 'GET', mode: 'no-cors', redirect: 'follow', signal: AbortSignal.timeout(10000) });
       const expanded = res.url || '';
       if (expanded && expanded !== url) {
         const parsed = parseLatLng(expanded);
         if (parsed && setLatLngResult(parsed.lat, parsed.lng)) return;
       }
-    } catch (e) {
-      // フォールスルー
-    }
-
-    // no-cors で取れなかった場合は corsproxy.io を試す
+    } catch (e) {}
     try {
       const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(url);
       const res2 = await fetch(proxyUrl, { signal: AbortSignal.timeout(10000) });
-      // リダイレクト後の最終URLをres2.urlから、またはHTMLのcanonicalタグから取得
       const expanded2 = res2.url || '';
       if (expanded2 && expanded2 !== proxyUrl) {
         const parsed = parseLatLng(expanded2);
         if (parsed && setLatLngResult(parsed.lat, parsed.lng)) return;
       }
-      // HTMLソースの中にも座標が埋め込まれている場合がある
       const html = await res2.text();
       const parsed = parseLatLng(html);
       if (parsed && setLatLngResult(parsed.lat, parsed.lng)) return;
-    } catch (e) {
-      // フォールスルー
-    }
+    } catch (e) {}
   }
-
-  // すべて失敗
   document.getElementById('fLat').value = '';
   document.getElementById('fLng').value = '';
   status.style.color = 'var(--warn)';
   status.textContent = url.length > 10 ? '⚠️ 座標を取得できませんでした。ブラウザ版GoogleマップのアドレスバーのURLをお試しください' : '';
 }
 
-
 // ===== EXPORT / IMPORT =====
 function exportData() {
-  const payload = {
-    version: 1,
-    exportedAt: new Date().toISOString(),
-    stores,
-    visits,
-    sessions,
-  };
+  const payload = { version: 1, exportedAt: new Date().toISOString(), stores, visits, sessions };
   const json = JSON.stringify(payload, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
   const url  = URL.createObjectURL(blob);
@@ -969,19 +995,13 @@ function importData(event) {
   reader.onload = e => {
     try {
       const data = JSON.parse(e.target.result);
-
-      // バリデーション
       if (!data.version || !Array.isArray(data.stores)) {
         toast('⚠️ このファイルは対応していない形式です'); return;
       }
-
-      // 重複チェックしながらマージ（idが既存と被らないものだけ追加）
       let addedStores = 0, addedVisits = 0, addedSessions = 0;
-
       const existingStoreIds   = new Set(stores.map(s => s.id));
       const existingVisitKeys  = new Set(visits.map(v => v.startTs + '_' + v.storeId));
       const existingSessionIds = new Set(sessions.map(s => s.id));
-
       (data.stores || []).forEach(s => {
         if (!existingStoreIds.has(s.id)) { stores.push(s); addedStores++; }
       });
@@ -992,20 +1012,13 @@ function importData(event) {
       (data.sessions || []).forEach(s => {
         if (!existingSessionIds.has(s.id)) { sessions.push(s); addedSessions++; }
       });
-
-      // 日付順に並び替え
       visits.sort((a, b) => (b.startTs || 0) - (a.startTs || 0));
       sessions.sort((a, b) => (b.startTs || 0) - (a.startTs || 0));
-
-      save();
-      renderDataSummary();
-      renderStoresList();
-
+      save(); renderDataSummary(); renderStoresList();
       toast(`インポート完了 店舗+${addedStores} 履歴+${addedVisits} 記録+${addedSessions}`);
     } catch {
       toast('⚠️ ファイルの読み込みに失敗しました');
     }
-    // input をリセット（同じファイルを再度選べるように）
     event.target.value = '';
   };
   reader.readAsText(file);
@@ -1014,16 +1027,12 @@ function importData(event) {
 function renderDataSummary() {
   const el = document.getElementById('dataSummary');
   if (!el) return;
-
-  // データサイズ計算
   const keys = ['sedori_stores','sedori_history','sedori_sessions','sedori_checkins','sedori_session'];
   let totalBytes = 0;
-  keys.forEach(k => { totalBytes += (localStorage.getItem(k) || '').length * 2; }); // UTF-16
+  keys.forEach(k => { totalBytes += (localStorage.getItem(k) || '').length * 2; });
   const sizeStr = totalBytes < 1024 ? totalBytes + ' B'
                 : totalBytes < 1048576 ? (totalBytes/1024).toFixed(1) + ' KB'
                 : (totalBytes/1048576).toFixed(2) + ' MB';
-
-  const lastExport = '—'; // 将来的に記録可能
   el.innerHTML = `
     <div class="data-summary-row"><span class="data-summary-label">登録店舗数</span><span class="data-summary-value">${stores.length} 件</span></div>
     <div class="data-summary-row"><span class="data-summary-label">訪問履歴</span><span class="data-summary-value">${visits.length} 件</span></div>
@@ -1055,11 +1064,33 @@ function openEditModal(id) {
 function closeModal(e) { if (e.target===document.getElementById('modalOverlay')) closeModalForce(); }
 function closeModalForce() { document.getElementById('modalOverlay').classList.remove('open'); }
 function useCurrentLocation() {
-  if (currentLat) {
-    document.getElementById('fLat').value = currentLat.toFixed(6);
-    document.getElementById('fLng').value = currentLng.toFixed(6);
+  if (!navigator.geolocation) { toast('GPS非対応ブラウザです'); return; }
+  const btn = event.currentTarget;
+  const origText = btn.innerHTML;
+  btn.innerHTML = '📍 取得中...';
+  btn.disabled = true;
+  navigator.geolocation.getCurrentPosition(pos => {
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
+    document.getElementById('fLat').value = lat.toFixed(6);
+    document.getElementById('fLng').value = lng.toFixed(6);
+    const status = document.getElementById('latlngStatus');
+    status.style.color = 'var(--accent)';
+    status.textContent = '✅ 現在地から座標を取得しました (' + lat.toFixed(4) + ', ' + lng.toFixed(4) + ')';
+    // ホーム画面のGPS状態も更新
+    currentLat = lat; currentLng = lng;
+    const dot = document.getElementById('gpsDot');
+    const txt = document.getElementById('gpsText');
+    if (dot) dot.className = 'gps-dot active';
+    if (txt) txt.textContent = `現在地取得済み (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+    btn.innerHTML = origText;
+    btn.disabled = false;
     toast('現在地の座標をセットしました');
-  } else { toast('先にホームで現在地を取得してください'); }
+  }, () => {
+    btn.innerHTML = origText;
+    btn.disabled = false;
+    toast('GPS取得に失敗しました。位置情報の許可を確認してください');
+  }, { enableHighAccuracy: true, timeout: 10000 });
 }
 function saveStore() {
   const name = document.getElementById('fName').value.trim();
@@ -1073,13 +1104,69 @@ function saveStore() {
   };
   if (editingId) { stores[stores.findIndex(x=>x.id===editingId)] = s; }
   else stores.push(s);
-  save(); closeModalForce(); renderStoresList();
+  save(); closeModalForce(); renderStoresList(); renderNearby();
   toast(editingId ? '店舗を更新しました' : '店舗を追加しました');
 }
 function deleteStore(id) {
-  if (!confirm('この店舗を削除しますか？')) return;
-  stores = stores.filter(s=>s.id!==id);
-  save(); renderStoresList(); toast('削除しました');
+  const s = stores.find(x => x.id === id);
+  if (!s) return;
+  const visitCount = visits.filter(v => v.storeId === id).length;
+
+  if (visitCount > 0) {
+    // 訪問履歴がある場合：選択肢を出す
+    showDeleteStoreDialog(id, s.name, visitCount);
+  } else {
+    // 訪問履歴がない場合：単純な確認
+    showConfirm({
+      icon: '🗑️',
+      title: 'この店舗を削除しますか？',
+      msg: s.name,
+      okLabel: '削除する',
+      okClass: 'ok-stop',
+      onOk: () => {
+        stores = stores.filter(x => x.id !== id);
+        save(); renderStoresList(); renderNearby();
+        toast('店舗を削除しました');
+      }
+    });
+  }
+}
+function showDeleteStoreDialog(id, name, visitCount) {
+  // カスタムダイアログ：店舗のみ削除 or 履歴も削除 の2択
+  const overlay = document.getElementById('confirmOverlay');
+  const box = overlay.querySelector('.confirm-box');
+  box.innerHTML = `
+    <div class="confirm-icon">🗑️</div>
+    <div class="confirm-title">${name} を削除</div>
+    <div class="confirm-msg">この店舗には <strong>${visitCount}件</strong> の訪問履歴があります。<br>訪問履歴をどうしますか？</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+      <button class="confirm-btn ok-stop" onclick="doDeleteStore('${id}', false)" style="flex:none">店舗だけ削除（履歴は残す）</button>
+      <button class="confirm-btn" onclick="doDeleteStore('${id}', true)" style="flex:none;background:rgba(255,107,53,0.1);color:var(--warn);border:1px solid rgba(255,107,53,0.3)">店舗と履歴をすべて削除</button>
+      <button class="confirm-btn cancel" onclick="closeConfirm();restoreConfirmBox()" style="flex:none">キャンセル</button>
+    </div>`;
+  overlay.classList.add('open');
+}
+function doDeleteStore(id, deleteHistory) {
+  stores = stores.filter(x => x.id !== id);
+  if (deleteHistory) {
+    visits = visits.filter(v => v.storeId !== id);
+  }
+  closeConfirm();
+  restoreConfirmBox();
+  save(); renderStoresList(); renderNearby();
+  toast(deleteHistory ? '店舗と履歴を削除しました' : '店舗を削除しました（履歴は保持）');
+}
+function restoreConfirmBox() {
+  // カスタムダイアログ使用後に元のHTML構造を復元
+  const box = document.querySelector('.confirm-box');
+  box.innerHTML = `
+    <div class="confirm-icon" id="confirmIcon"></div>
+    <div class="confirm-title" id="confirmTitle"></div>
+    <div class="confirm-msg" id="confirmMsg"></div>
+    <div class="confirm-btns">
+      <button class="confirm-btn cancel" onclick="closeConfirm()">キャンセル</button>
+      <button class="confirm-btn" id="confirmOkBtn" onclick="confirmOk()"></button>
+    </div>`;
 }
 
 // ===== NOTIFICATIONS =====
@@ -1130,10 +1217,10 @@ window.onload = () => {
   if (session) {
     updateSessionUI(); startSessionTimer();
     Object.keys(checkins).forEach(id => startCheckinTimer(id));
-    renderNearby();
   } else {
     updateSessionUI();
   }
+  renderNearby(); // 常に店舗一覧を描画
   checkNotifBanner();
   scheduleNotifications();
 };
